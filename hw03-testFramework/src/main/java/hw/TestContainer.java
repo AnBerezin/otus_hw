@@ -15,9 +15,6 @@ public class TestContainer {
 
     private final Class<?> clazz;
     private Constructor<?> constructor;
-    private static final String BEFORE_ANNOTATION = "@hw.Before()";
-    private static final String TEST_ANNOTATION = "@hw.Test()";
-    private static final String AFTER_ANNOTATION = "@hw.After()";
 
     //Контейнеры для методов
     private final List<Method> beforeMethodsList = new ArrayList<>();
@@ -43,9 +40,11 @@ public class TestContainer {
     }
 
 
-    // Метод для исследования класса
-    // Сохраняет конструктор по умолчанию
-    // Ищет методы с аннтоциями @Before, @After, @Test
+    /**
+     * Метод для исследования класса
+     * Сохраняет конструктор по умолчанию
+     * Ищет методы с аннтоциями @Before, @After, @Test
+     */
     private void discoveryClass() throws NoSuchMethodException {
         this.constructor = clazz.getConstructor();
 
@@ -53,13 +52,13 @@ public class TestContainer {
             log.info(method.getName());
             for (var annotation : method.getAnnotations()) {
                 log.info(annotation.toString());
-                if (annotation.toString().equals(BEFORE_ANNOTATION)) {
+                if (annotation instanceof Before) {
                     beforeMethodsList.add(method);
                 }
-                if (annotation.toString().equals(AFTER_ANNOTATION)) {
+                if (annotation instanceof After) {
                     afterMethodsList.add(method);
                 }
-                if (annotation.toString().equals(TEST_ANNOTATION)) {
+                if (annotation instanceof Test) {
                     testMethodsList.add(method);
                 }
             }
@@ -73,12 +72,14 @@ public class TestContainer {
         }
     }
 
-    //Метод по запуску методов с аннтоцией @Test
-    //Использует конструктор без параметров
-    //Создает новый экземпляр класса теста
-    //Запускает все методы с аннотацией @Before
-    //Выполняет один метод @Test
-    //Запускает все методы с аннотацией @After
+    /**
+     * Метод по запуску методов с аннтоцией @Test
+     * Использует конструктор без параметров
+     * Создает новый экземпляр класса теста
+     * Запускает все методы с аннотацией @Before
+     * Выполняет один метод @Test
+     * Запускает все методы с аннотацией @After
+     */
     private void runTestMethods(Method method) {
         Object classInstance;
         try {
@@ -104,8 +105,10 @@ public class TestContainer {
         runAfterMethods(classInstance);
     }
 
-    //Запуск всех методов с аннотацией @Before
-    //Входной параметр инстанс класса, в котором будет вызываться метод
+    /**
+     * Запуск всех методов с аннотацией @Before
+     * Входной параметр инстанс класса, в котором будет вызываться метод
+     */
     private boolean runBeforeMethods(Object instance) {
         boolean result = true;
         if (!beforeMethodsList.isEmpty()) {
@@ -123,8 +126,10 @@ public class TestContainer {
         return result;
     }
 
-    //Запуск всех методов с аннотацией @After
-    //Входной параметр инстанс класса, в котором будет вызываться метод
+    /**
+     * Запуск всех методов с аннотацией @After
+     * Входной параметр инстанс класса, в котором будет вызываться метод
+     */
     private void runAfterMethods(Object instance) {
         if (!afterMethodsList.isEmpty()) {
             for (var method : afterMethodsList) {
@@ -137,10 +142,12 @@ public class TestContainer {
         }
     }
 
-    //Запуск метода
-    //Входные параметры:
-    // объект Method
-    // инстанс класса, в котором будет вызываться метод
+    /**
+     * Запуск метода
+     * Входные параметры:
+     * объект Method
+     * инстанс класса, в котором будет вызываться метод
+     */
     private void runMethod(Method method, Object instance) throws RuntimeException, InvocationTargetException, IllegalAccessException {
         var result = method.invoke(instance);
     }
