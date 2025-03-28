@@ -1,0 +1,13 @@
+Before
+HeapSize  Sec  Msec
+256Mb     877  876671
+512Mb     834  834204
+1G        813  813666
+2G        826  826554
+
+After
+HeapSize  Sec  Msec
+256Mb     13   13921
+512Mb     13   13767
+1G        12   12720
+2G        12   12458
