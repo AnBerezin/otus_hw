@@ -11,3 +11,10 @@ HeapSize  Sec  Msec
 512Mb     13   13767
 1G        12   12720
 2G        12   12458
+
+Mutable Data
+HeapSize  Sec  Msec
+256Mb     8    8288.024
+512Mb     8    8226.941
+1G        8    8219.270
+2G        8    8245.016

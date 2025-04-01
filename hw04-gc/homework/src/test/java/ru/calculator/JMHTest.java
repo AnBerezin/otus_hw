@@ -37,8 +37,9 @@ public class JMHTest {
 
     @Benchmark
     public void summatorTest() {
+        var data = new Data(0);
         for (var idx = 0; idx < COUNTER; idx++) {
-            var data = new Data(idx);
+            data.setValue(idx);
             summator.calc(data);
         }
     }
