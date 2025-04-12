@@ -2,6 +2,7 @@ rootProject.name = "otus_hw"
 include("hw01-gradle")
 include("hw02-collections")
 include("hw03-testFramework")
+include("hw04-gc:homework")
 
 
 pluginManagement {
