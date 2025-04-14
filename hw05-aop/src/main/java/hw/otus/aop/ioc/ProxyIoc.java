@@ -5,6 +5,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.lang.reflect.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 @SuppressWarnings("unchecked")
 public class ProxyIoc {
@@ -13,7 +16,7 @@ public class ProxyIoc {
     public static <T> T createClass(Class<?> interfaceName, Class<?> className) throws NoSuchMethodException, InvocationTargetException, InstantiationException, IllegalAccessException {
 
         Constructor<?> constructor = className.getConstructor();
-        InvocationHandler handler = new ProxyInvocationHandler<>((T)constructor.newInstance(new Object[] {}));
+        InvocationHandler handler = new ProxyInvocationHandler<>((T) constructor.newInstance(new Object[]{}));
 
         T result;
         try {
@@ -25,11 +28,15 @@ public class ProxyIoc {
         return result;
     }
 
+
     static class ProxyInvocationHandler<T> implements InvocationHandler {
         private final T workerClass;
+        private final List<Method> logMarkedMethods = new ArrayList<>();
+
 
         ProxyInvocationHandler(T myClass) {
             this.workerClass = myClass;
+            discoveryClass(myClass.getClass());
         }
 
         @Override
@@ -45,21 +52,24 @@ public class ProxyIoc {
             return "DemoInvocationHandler{" + "myClass=" + workerClass + '}';
         }
 
-        private boolean logMarked(Method method) {
-            Class<?> clazz = workerClass.getClass();
-            Method classMethod;
-            try {
-                classMethod = clazz.getMethod(method.getName(), method.getParameterTypes());
-            } catch (NoSuchMethodException e) {
-                return false;
-            }
-
-            for (var annotation : classMethod.getAnnotations()) {
-                if (annotation instanceof Log) {
+        private boolean logMarked(Method invokeMethod) {
+            for (var method : logMarkedMethods) {
+                if (method.getName().equals(invokeMethod.getName()) && Arrays.equals(method.getParameterTypes(), invokeMethod.getParameterTypes())) {
                     return true;
                 }
             }
             return false;
         }
+
+        private void discoveryClass(Class<?> clazz) {
+            for (var method : clazz.getDeclaredMethods()) {
+                for (var annotations : method.getAnnotations()) {
+                    if (annotations instanceof Log) {
+                        logMarkedMethods.add(method);
+                    }
+                }
+            }
+        }
+
     }
 }
