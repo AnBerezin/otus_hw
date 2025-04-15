@@ -5,9 +5,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.lang.reflect.*;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 
 @SuppressWarnings("unchecked")
 public class ProxyIoc {
@@ -31,7 +29,7 @@ public class ProxyIoc {
 
     static class ProxyInvocationHandler<T> implements InvocationHandler {
         private final T workerClass;
-        private final List<Method> logMarkedMethods = new ArrayList<>();
+        private final Set<Method> logMarkedMethods = new HashSet<>();
 
 
         ProxyInvocationHandler(T myClass) {
