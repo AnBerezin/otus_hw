@@ -4,6 +4,7 @@ include("hw02-collections")
 include("hw03-testFramework")
 include("hw04-gc:homework")
 include("hw05-aop")
+include("hw06-atm")
 
 
 pluginManagement {
