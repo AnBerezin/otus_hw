@@ -5,6 +5,7 @@ include("hw03-testFramework")
 include("hw04-gc:homework")
 include("hw05-aop")
 include("hw06-atm")
+include("hw08-serialization")
 
 
 pluginManagement {
