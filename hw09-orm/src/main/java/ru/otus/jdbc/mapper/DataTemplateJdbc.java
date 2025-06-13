@@ -60,7 +60,7 @@ public class DataTemplateJdbc<T> implements DataTemplate<T> {
         return dbExecutor.executeSelect(connection, entitySQLMetaData.getSelectAllSql(), null, rs -> {
             List<T> resultList = new ArrayList<>();
             try {
-                if (rs.next()) {
+                while (rs.next()) {
                     resultList.add(createInstance(rs));
                 }
             } catch (SQLException | NoSuchMethodException e) {
