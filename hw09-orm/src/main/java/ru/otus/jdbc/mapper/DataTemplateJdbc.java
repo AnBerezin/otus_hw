@@ -59,6 +59,13 @@ public class DataTemplateJdbc<T> implements DataTemplate<T> {
     public List<T> findAll(Connection connection) {
         return dbExecutor.executeSelect(connection, entitySQLMetaData.getSelectAllSql(), null, rs -> {
             List<T> resultList = new ArrayList<>();
+            try {
+                if (rs.next()) {
+                    resultList.add(createInstance(rs));
+                }
+            } catch (SQLException | NoSuchMethodException e) {
+                throw new DataTemplateException(e);
+            }
             return resultList;
         }).orElse(null);
     }
