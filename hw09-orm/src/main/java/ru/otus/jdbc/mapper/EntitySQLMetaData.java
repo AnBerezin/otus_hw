@@ -10,9 +10,9 @@ public interface EntitySQLMetaData {
 
     String getSelectByIdSql();
 
-    String getInsertSql(List<Field> fields);
+    String getInsertSql();
 
     String getUpdateSql();
 
-    Constructor getEntityConstructor();
+    //Constructor getEntityConstructor();
 }

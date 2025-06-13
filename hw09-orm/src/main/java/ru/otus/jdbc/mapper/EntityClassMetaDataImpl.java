@@ -11,18 +11,18 @@ import java.util.List;
 public class EntityClassMetaDataImpl<T> implements EntityClassMetaData<T> {
     private static final Logger log = LoggerFactory.getLogger(EntityClassMetaDataImpl.class);
     private final Class<T> clazz;
-    private Constructor<T> constructor;
+    private final Constructor<T> constructor;
     private Field idField;
     private final List<Field> fields = new ArrayList<>();
+    private final List<Field> fieldsWithoutId = new ArrayList<>();
 
-    public EntityClassMetaDataImpl(Class clazz) {
+    public EntityClassMetaDataImpl(Class<T> clazz) {
         this.clazz = clazz;
-        //this.clazz = (Class<T>) clazz;
         try {
+            this.constructor = clazz.getConstructor();
             discoveryClass();
         } catch (NoSuchMethodException e) {
-            log.error("Method not found for Class {}", clazz.getCanonicalName());
-            log.error(e.toString());
+            throw new RuntimeException(e);
         }
     }
 
@@ -37,15 +37,10 @@ public class EntityClassMetaDataImpl<T> implements EntityClassMetaData<T> {
                     this.idField = field;
                 }
             }
+            if (idField != field) {
+                fieldsWithoutId.add(field);
+            }
         }
-
-        Class<?>[] parameterTypes = new Class[fields.size()];
-
-        for (int i = 0; i < fields.size(); i++) {
-            parameterTypes[i] = fields.get(i).getType();
-        }
-
-        this.constructor = clazz.getConstructor(parameterTypes);
     }
 
     @Override
@@ -54,7 +49,7 @@ public class EntityClassMetaDataImpl<T> implements EntityClassMetaData<T> {
     }
 
     @Override
-    public Constructor getConstructor() {
+    public Constructor<T> getConstructor() {
         return constructor;
     }
 
@@ -70,8 +65,6 @@ public class EntityClassMetaDataImpl<T> implements EntityClassMetaData<T> {
 
     @Override
     public List<Field> getFieldsWithoutId() {
-        return fields.stream()
-                .filter(field -> !field.equals(this.idField))
-                .toList();
+        return fieldsWithoutId;
     }
 }
