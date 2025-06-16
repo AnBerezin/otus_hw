@@ -26,12 +26,14 @@ public class DataTemplateJdbc<T> implements DataTemplate<T> {
 
     private final DbExecutor dbExecutor;
     private final EntitySQLMetaData entitySQLMetaData;
+    private final EntityClassMetaData<T> entityClassMetaData;
 
     private final Type type;
 
-    public DataTemplateJdbc(DbExecutor dbExecutor, EntitySQLMetaData entitySQLMetaData) {
+    public DataTemplateJdbc(DbExecutor dbExecutor, EntitySQLMetaData entitySQLMetaData, EntityClassMetaData<T> entityClassMetaData) {
         this.dbExecutor = dbExecutor;
         this.entitySQLMetaData = entitySQLMetaData;
+        this.entityClassMetaData = entityClassMetaData;
 
         Type superClass = getClass().getGenericSuperclass();
         if (superClass instanceof ParameterizedType) {
@@ -92,15 +94,12 @@ public class DataTemplateJdbc<T> implements DataTemplate<T> {
                 columnNames.add(metaData.getColumnLabel(i).toLowerCase());
             }
 
-            for (Field field : getRawType().getDeclaredFields()) {
+            for (Field field : entityClassMetaData.getAllFields()) {
                 String fieldName = field.getName().toLowerCase();
 
                 if (columnNames.contains(fieldName)) {
                     field.setAccessible(true);
                     Object value = rs.getObject(field.getName());
-                    if (value != null && !field.getType().isAssignableFrom(value.getClass())) {
-                        value = convertValue(value, field.getType());
-                    }
                     field.set(instance, value);
                 }
             }
@@ -127,8 +126,7 @@ public class DataTemplateJdbc<T> implements DataTemplate<T> {
                     fieldValues.add(field.get(entity));
                 }
             } catch (IllegalAccessException e) {
-                log.error("Ошибка доступа к полю: {}", field.getName());
-                e.printStackTrace();
+                throw new DataTemplateException(e);
             }
         }
         return fieldValues;
@@ -143,21 +141,5 @@ public class DataTemplateJdbc<T> implements DataTemplate<T> {
         } else {
             throw new RuntimeException("Cannot determine raw type for: " + type);
         }
-    }
-
-    private static Object convertValue(Object value, Class<?> targetType) {
-        if (targetType == int.class || targetType == Integer.class)
-            return ((Number) value).intValue();
-        if (targetType == long.class || targetType == Long.class)
-            return ((Number) value).longValue();
-        if (targetType == double.class || targetType == Double.class)
-            return ((Number) value).doubleValue();
-        if (targetType == float.class || targetType == Float.class)
-            return ((Number) value).floatValue();
-        if (targetType == boolean.class || targetType == Boolean.class)
-            return value instanceof Boolean ? value : Boolean.parseBoolean(value.toString());
-        if (targetType == String.class)
-            return value.toString();
-        return value;
     }
 }
