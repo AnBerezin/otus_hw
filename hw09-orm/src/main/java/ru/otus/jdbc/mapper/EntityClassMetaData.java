@@ -8,7 +8,7 @@ import java.util.List;
 public interface EntityClassMetaData<T> {
     String getName();
 
-    Constructor getConstructor();
+    Constructor<T> getConstructor();
 
     // Поле Id должно определять по наличию аннотации Id
     // Аннотацию @Id надо сделать самостоятельно

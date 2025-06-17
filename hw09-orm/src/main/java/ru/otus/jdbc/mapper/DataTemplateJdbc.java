@@ -69,7 +69,7 @@ public class DataTemplateJdbc<T> implements DataTemplate<T> {
                 throw new DataTemplateException(e);
             }
             return resultList;
-        }).orElse(null);
+        }).orElse(new ArrayList<T>());
     }
 
     @Override
@@ -79,11 +79,11 @@ public class DataTemplateJdbc<T> implements DataTemplate<T> {
 
     @Override
     public void update(Connection connection, T entity) {
-        throw new UnsupportedOperationException();
+        dbExecutor.executeStatement(connection, entitySQLMetaData.getUpdateSql(), getFieldValueAsParam(entity));
     }
 
     private T createInstance(ResultSet rs) throws NoSuchMethodException {
-        Constructor<T> constructor = getRawType().getDeclaredConstructor();
+        Constructor<T> constructor = entityClassMetaData.getConstructor();
         try {
             T instance = constructor.newInstance();
             ResultSetMetaData metaData = rs.getMetaData();
@@ -130,16 +130,5 @@ public class DataTemplateJdbc<T> implements DataTemplate<T> {
             }
         }
         return fieldValues;
-    }
-
-    @SuppressWarnings("unchecked")
-    public Class<T> getRawType() {
-        if (type instanceof Class) {
-            return (Class<T>) type;
-        } else if (type instanceof ParameterizedType) {
-            return (Class<T>) ((ParameterizedType) type).getRawType();
-        } else {
-            throw new RuntimeException("Cannot determine raw type for: " + type);
-        }
     }
 }
