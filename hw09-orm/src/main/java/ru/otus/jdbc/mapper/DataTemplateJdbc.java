@@ -28,19 +28,10 @@ public class DataTemplateJdbc<T> implements DataTemplate<T> {
     private final EntitySQLMetaData entitySQLMetaData;
     private final EntityClassMetaData<T> entityClassMetaData;
 
-    private final Type type;
-
     public DataTemplateJdbc(DbExecutor dbExecutor, EntitySQLMetaData entitySQLMetaData, EntityClassMetaData<T> entityClassMetaData) {
         this.dbExecutor = dbExecutor;
         this.entitySQLMetaData = entitySQLMetaData;
         this.entityClassMetaData = entityClassMetaData;
-
-        Type superClass = getClass().getGenericSuperclass();
-        if (superClass instanceof ParameterizedType) {
-            this.type = ((ParameterizedType) superClass).getActualTypeArguments()[0];
-        } else {
-            throw new RuntimeException("Missing type parameter.");
-        }
     }
 
     @Override
@@ -74,12 +65,12 @@ public class DataTemplateJdbc<T> implements DataTemplate<T> {
 
     @Override
     public long insert(Connection connection, T entity) {
-        return dbExecutor.executeStatement(connection, entitySQLMetaData.getInsertSql(), getFieldValueAsParam(entity));
+        return dbExecutor.executeStatement(connection, entitySQLMetaData.getInsertSql(), getFieldValueAsParam(entity, entityClassMetaData.getFieldsWithoutId()));
     }
 
     @Override
     public void update(Connection connection, T entity) {
-        dbExecutor.executeStatement(connection, entitySQLMetaData.getUpdateSql(), getFieldValueAsParam(entity));
+        dbExecutor.executeStatement(connection, entitySQLMetaData.getUpdateSql(), getFieldValueAsParam(entity, entityClassMetaData.getAllFields()));
     }
 
     private T createInstance(ResultSet rs) throws NoSuchMethodException {
@@ -110,21 +101,12 @@ public class DataTemplateJdbc<T> implements DataTemplate<T> {
         }
     }
 
-    private List<Object> getFieldValueAsParam(T entity) {
+    private List<Object> getFieldValueAsParam(T entity, List<Field> fields) {
         List<Object> fieldValues = new ArrayList<>();
-        Field[] fields = entity.getClass().getDeclaredFields();
         for (Field field : fields) {
-            boolean isIdField = false;
             field.setAccessible(true);
             try {
-                for (var annotation : field.getAnnotations()) {
-                    if (annotation instanceof TableId) {
-                        isIdField = true;
-                    }
-                }
-                if (!isIdField) {
-                    fieldValues.add(field.get(entity));
-                }
+                fieldValues.add(field.get(entity));
             } catch (IllegalAccessException e) {
                 throw new DataTemplateException(e);
             }
