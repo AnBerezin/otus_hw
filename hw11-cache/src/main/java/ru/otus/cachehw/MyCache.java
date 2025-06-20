@@ -12,8 +12,8 @@ import java.util.WeakHashMap;
 
 public class MyCache<K, V> implements HwCache<K, V> {
     private static final Logger log = LoggerFactory.getLogger(MyCache.class);
-    Map<K, V> cache = new WeakHashMap<>();
-    List<HwListener<K, V>> listeners = new ArrayList<>();
+    private final Map<K, V> cache = new WeakHashMap<>();
+    private final List<HwListener<K, V>> listeners = new ArrayList<>();
 
     @Override
     public void put(K key, V value) {

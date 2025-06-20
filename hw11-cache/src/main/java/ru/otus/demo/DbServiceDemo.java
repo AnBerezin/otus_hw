@@ -38,10 +38,12 @@ public class DbServiceDemo {
 
         var clientTemplate = new DataTemplateHibernate<>(Client.class);
 
+        var cache = new MyCache<String, Client>();
+
 
         List<Long> clientsId = new ArrayList<>();
 
-        var dbServiceClient = new DbServiceClientImpl(transactionManager, clientTemplate);
+        var dbServiceClient = new DbServiceClientImpl(transactionManager, clientTemplate, cache);
         for (var idx = 0; idx < 10; idx++) {
             var client = dbServiceClient.saveClient(new Client("Client_" + idx));
             clientsId.add(client.getId());

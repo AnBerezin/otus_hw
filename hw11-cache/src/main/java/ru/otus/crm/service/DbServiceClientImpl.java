@@ -5,6 +5,7 @@ import java.util.Optional;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import ru.otus.cachehw.HwCache;
 import ru.otus.cachehw.MyCache;
 import ru.otus.core.repository.DataTemplate;
 import ru.otus.core.sessionmanager.TransactionManager;
@@ -13,14 +14,15 @@ import ru.otus.crm.model.Client;
 public class DbServiceClientImpl implements DBServiceClient {
     private static final Logger log = LoggerFactory.getLogger(DbServiceClientImpl.class);
 
-    private final MyCache<String, Client> cache = new MyCache<>();
+    private final HwCache<String, Client> cache;
 
     private final DataTemplate<Client> clientDataTemplate;
     private final TransactionManager transactionManager;
 
-    public DbServiceClientImpl(TransactionManager transactionManager, DataTemplate<Client> clientDataTemplate) {
+    public DbServiceClientImpl(TransactionManager transactionManager, DataTemplate<Client> clientDataTemplate, HwCache<String, Client> cache) {
         this.transactionManager = transactionManager;
         this.clientDataTemplate = clientDataTemplate;
+        this.cache = cache;
     }
 
     @Override
@@ -30,10 +32,12 @@ public class DbServiceClientImpl implements DBServiceClient {
             if (client.getId() == null) {
                 var savedClient = clientDataTemplate.insert(session, clientCloned);
                 log.info("created client: {}", clientCloned);
+                putToCache(savedClient);
                 return savedClient;
             }
             var savedClient = clientDataTemplate.update(session, clientCloned);
             log.info("updated client: {}", savedClient);
+            putToCache(savedClient);
             return savedClient;
         });
     }
@@ -56,10 +60,7 @@ public class DbServiceClientImpl implements DBServiceClient {
             }
 
             if (clientOptional.isPresent()) {
-                Client client = clientOptional.get();
-                String weekId = clientOptional.get().getId().toString();
-                cache.put(weekId, client);
-                weekId = null;
+                putToCache(clientOptional.get());
             }
             return clientOptional;
         });
@@ -70,7 +71,18 @@ public class DbServiceClientImpl implements DBServiceClient {
         return transactionManager.doInReadOnlyTransaction(session -> {
             var clientList = clientDataTemplate.findAll(session);
             log.info("clientList:{}", clientList);
+            putListClientsToCache(clientList);
             return clientList;
         });
+    }
+
+    private void putListClientsToCache(List<Client> client) {
+        client.stream().forEach(this::putToCache);
+    }
+
+    private void putToCache(Client client) {
+        String weekId = client.getId().toString();
+        cache.put(weekId, client);
+        weekId = null;
     }
 }
