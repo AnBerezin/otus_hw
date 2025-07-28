@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="ru" xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <title>Клиенты</title>
+</head>
+
+<body>
+
+<form action="/api/client" method="post">
+    <label for="name">Имя:</label>
+    <input type="text" id="name" name="name" required>
+
+    <button type="submit">Добавить</button>
+</form>
+
+<#if error??>
+<p class="error">Ошибка: ${error}</p>
+</#if>
+
+<h4>Список клиентов</h4>
+    <table style="width: 400px; border-collapse: collapse; border: 1px solid #ddd;">
+        <thead>
+            <tr style="font-weight: bold; border-bottom: 2px solid #000;">
+                <th style="width: 50px; text-align: left; padding: 8px; border-right: 1px solid #ddd; border-left: 1px solid #ddd;">Id</th>
+                <th style="width: 150px; text-align: left; padding: 8px; border-right: 1px solid #ddd;">Имя</th>
+            </tr>
+        </thead>
+
+        <tbody>
+            <#if clients?? && clients?has_content>
+                <#list clients as client>
+                    <tr style="border-bottom: 1px solid #ddd;">
+                        <td style="padding: 8px; border-right: 1px solid #ddd; border-left: 1px solid #ddd;">${client.id!}</td>
+                        <td style="padding: 8px; border-right: 1px solid #ddd;">${client.name!}</td>
+                    </tr>
+                </#list>
+            <#else>
+                <tr>
+                    <td colspan="2" style="padding: 8px; border-left: 1px solid #ddd; border-right: 1px solid #ddd;">Нет данных о клиентах</td>
+                </tr>
+            </#if>
+        </tbody>
+    </table>
+</body>
+</html>
